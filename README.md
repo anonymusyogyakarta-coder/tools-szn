@@ -1,18 +1,19 @@
-# ⚡ SZN-OTP ULTIMATE V6
-> **Advanced OTP Dispatcher & Bypasser Engine**
+# ⚡ SZN-OTP ULTIMATE V6 ⚡
+> **Advanced OTP Dispatcher & Security Bypasser**
 
-## 👤 Developer
+## 👤 DEVELOPER
 * **Instagram:** [@HZNXWICK](https://instagram.com/HZNXWICK)
-* **Status:** High-Bypass Active 2026
+* **Engine:** Hybrid Python-NodeJS (v2026)
 
-## 🛠️ Features
-* [x] **Cloudflare Bypass** (Powered by Cloudscraper)
-* [x] **Hybrid Engine** (Python & NodeJS)
-* [x] **Binary Protection** (Anti-Recode)
-* [x] **Dynamic User-Agent** (Real-Device Simulation)
+## 🛠️ FEATURES
+* [x] **Cloudflare Bypasser**
+* [x] **Multi-Threaded Engine**
+* [x] **Binary Encryption** (Anti-Recode)
+* [x] **Real-Time Table Status**
 
-## 🚀 Installation
+## 🚀 INSTALLATION
 ```bash
+pkg install git make -y
 git clone [https://github.com/anonymusyogyakarta-coder/tools-szn](https://github.com/anonymusyogyakarta-coder/tools-szn)
 cd tools-szn
 make install
