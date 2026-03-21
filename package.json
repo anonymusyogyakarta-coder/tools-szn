@@ -1,0 +1,16 @@
+{
+  "name": "tools-szn-hybrid",
+  "version": "6.0.0",
+  "description": "Advanced Hybrid OTP & WhatsApp Suite",
+  "main": "Spammer.py",
+  "author": "anonymusyogyakarta-coder",
+  "license": "MIT",
+  "dependencies": {
+    "@whiskeysockets/baileys": "^6.6.0",
+    "chalk": "^4.1.2",
+    "pino": "^8.19.0",
+    "readline": "^1.3.0",
+    "axios": "^1.6.0",
+    "moment": "^2.30.1"
+  }
+}
