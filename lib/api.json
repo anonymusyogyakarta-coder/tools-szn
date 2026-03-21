@@ -1,0 +1,10 @@
+{
+  "whatsapp": [
+    {"name": "Mapclub", "url": "https://api.mapclub.com/v1/auth/otp", "method": "POST", "data": {"phone": "{target_full}", "channel": "whatsapp"}},
+    {"name": "Matahari", "url": "https://api.matahari.com/v1/auth/otp", "method": "POST", "data": {"phone": "{target_full}"}}
+  ],
+  "call": [
+    {"name": "Jagreward", "url": "https://id.jagreward.com/member/verify-mobile/", "method": "POST", "data": {"method": "call", "countryCode": "62", "phoneNumber": "{target_tanpa_62}"}}
+  ]
+}
+
