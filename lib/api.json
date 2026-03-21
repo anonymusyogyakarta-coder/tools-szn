@@ -1,24 +1,24 @@
 {
   "whatsapp": [
     {
-      "name": "Mapclub-WA", 
-      "url": "https://api.mapclub.com/v1/auth/otp", 
-      "method": "POST", 
-      "data": {"phone": "{target_full}", "channel": "whatsapp"}
+      "name": "MAPCLUB-WA",
+      "url": "https://www.mapclub.com/api/v1/auth/otp",
+      "method": "POST",
+      "data": {"phone": "{target_full}", "type": "REGISTER"}
     },
     {
-      "name": "Matahari-WA", 
-      "url": "https://api.matahari.com/v1/auth/otp", 
-      "method": "POST", 
-      "data": {"phone": "{target_full}"}
+      "name": "MATAHARI-WA",
+      "url": "https://api.matahari.com/v2/auth/send-otp",
+      "method": "POST",
+      "data": {"msisdn": "{target_biasa}", "action": "registration"}
     }
   ],
   "call": [
     {
-      "name": "Jagreward-Voice", 
-      "url": "https://id.jagreward.com/member/verify-mobile/", 
-      "method": "POST", 
-      "data": {"method": "call", "countryCode": "62", "phoneNumber": "{target_tanpa_62}"}
+      "name": "KLIKDOKTER-CALL",
+      "url": "https://api.klikdokter.com/v1/auth/login/otp-call",
+      "method": "POST",
+      "data": {"phone": "{target_full}"}
     }
   ]
 }
