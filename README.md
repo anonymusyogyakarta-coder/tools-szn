@@ -1,19 +1,19 @@
-# ⚡ SZN-OTP DISPATCHER PRO v6 ⚡
-> **Advanced OTP Testing Suite - Multi-Protocol (WhatsApp & Voice Call)**
+# ⚡ SZN-OTP ULTIMATE V6
+> **Advanced OTP Dispatcher & Bypasser Engine**
 
-![Banner](https://img.shields.io/badge/Status-Active-brightgreen) ![License](https://img.shields.io/badge/License-MIT-blue) ![Python](https://img.shields.io/badge/Language-Python-yellow)
+## 👤 Developer
+* **Instagram:** [@HZNXWICK](https://instagram.com/HZNXWICK)
+* **Status:** High-Bypass Active 2026
 
----
+## 🛠️ Features
+* [x] **Cloudflare Bypass** (Powered by Cloudscraper)
+* [x] **Hybrid Engine** (Python & NodeJS)
+* [x] **Binary Protection** (Anti-Recode)
+* [x] **Dynamic User-Agent** (Real-Device Simulation)
 
-### 🚀 Eksklusif Fitur:
-- [x] **WhatsApp Bypass** (Mapclub & Matahari API)
-- [x] **Voice Call Protocol** (High Priority Call)
-- [x] **Auto-Installer** (Zero-Configuration Setup)
-- [x] **Modular API** (Easy to Update)
-- [x] **Anti-Spam Filter** (Fake User-Agent)
-
-### 🛠️ Cara Install (Termux / Linux):
-Cukup salin dan tempel satu baris perintah sakti ini:
-
+## 🚀 Installation
 ```bash
-pkg install git python -y && git clone [https://github.com/anonymusyogyakarta-coder/tools-szn](https://github.com/anonymusyogyakarta-coder/tools-szn) && cd tools-szn && chmod +x setup.sh && ./setup.sh
+git clone [https://github.com/anonymusyogyakarta-coder/tools-szn](https://github.com/anonymusyogyakarta-coder/tools-szn)
+cd tools-szn
+make install
+make run
