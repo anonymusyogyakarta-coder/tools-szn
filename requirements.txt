@@ -1,2 +1,15 @@
+beautifulsoup4
+rich
+faker
+httpie
+cython
+certifi
+blessed
+urllib3
 requests
-colorama
+inquirer
+pypasser
+rich-cli
+dns-client
+cloudscraper
+fake-useragent
